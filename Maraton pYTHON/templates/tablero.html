@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tablero del Juego</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .casilla {
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            border: 1px solid #ddd;
+        }
+        .B { background-color: white; }
+        .N { background-color: black; }
+        .V { background-color: green; }
+        .O { background-color: orange; }
+        .A { background-color: yellow; }
+        .P { background-color: #F0F; } /* Representa casillas de pregunta */
+    </style>
+    
+    
+</head>
+<body>
+    <!-- Dentro de tablero.html o cualquier otra plantilla HTML que estés usando -->
+    <div class="container mt-5">
+        <div class="d-flex flex-row justify-content-start">
+            <!-- Contenedor del tablero -->
+            <div class="flex-grow-1 mr-3">
+                <h2>MARATON</h2>
+                <div class="tablero">
+                    {% for fila in tablero %}
+                        <div class="fila">
+                            {% for casilla in fila %}
+                                <div class="casilla {{ casilla }}"></div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Contenedor del dado y formulario para agregar jugadores -->
+            <div class="flex-grow-1">
+                <div class="dado-container mb-3">
+                    <h3>Resultado del Dado: <span id="resultado-dado">-</span></h3>
+                    <button id="boton-tirar-dado" class="btn btn-primary">Tirar Dado</button>
+                </div>
+                <form action="/configurar_tablero" method="post">
+                    <div class="form-group">
+                        <label for="num_jugadores">Número de Jugadores (1-4):</label>
+                        <input type="number" id="num_jugadores" name="num_jugadores" class="form-control" min="1" max="4" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Iniciar Juego</button>
+                </form>
+            </div>
+        </div>
+    </div>
+        
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('boton-tirar-dado').addEventListener('click', function() {
+                    const resultado = Math.floor(Math.random() * 6) + 1;  // Generar número entre 1 y 6
+                    document.getElementById('resultado-dado').textContent = resultado;
+                });
+            });
+        </script>
+        <!-- Al final de tu plantilla HTML, antes de cerrar el tag </body> -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ficha = document.getElementById('ficha');
+            let isDragging = false;
+        
+            ficha.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                let deltaX = e.clientX - ficha.getBoundingClientRect().left;
+                let deltaY = e.clientY - ficha.getBoundingClientRect().top;
+        
+                function mouseMoveHandler(e) {
+                    if (isDragging) {
+                        ficha.style.left = e.clientX - deltaX + 'px';
+                        ficha.style.top = e.clientY - deltaY + 'px';
+                    }
+                }
+        
+                function mouseUpHandler() {
+                    isDragging = false;
+                    window.removeEventListener('mousemove', mouseMoveHandler);
+                    window.removeEventListener('mouseup', mouseUpHandler);
+                }
+        
+                window.addEventListener('mousemove', mouseMoveHandler);
+                window.addEventListener('mouseup', mouseUpHandler);
+            });
+        });
+        </script>
+    
+        <!-- Template para fichas que será usado por JS -->
+        <script type="text/template" id="template-ficha">
+            <div class="ficha" draggable="true" style="background-color: COLOR;" id="ficha-ID"></div>
+        </script>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="/static/js/moverFichas.js"></script> 
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const formulario = document.querySelector('form');
+                formulario.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevenir el envío del formulario
+                    const numJugadores = parseInt(document.getElementById('num_jugadores').value, 10);
+                    const colores = ['red', 'blue', 'green', 'yellow'];
+                    const tablero = document.querySelector('.tablero');
+            
+                    // Limpiar fichas existentes
+                    document.querySelectorAll('.ficha').forEach(ficha => ficha.remove());
+            
+                    for (let i = 0; i < numJugadores; i++) {
+                        let ficha = document.createElement('div');
+                        ficha.classList.add('ficha');
+                        ficha.style.width = '25px';
+                        ficha.style.height = '25px';
+                        ficha.style.backgroundColor = colores[i];
+                        ficha.style.position = 'absolute';
+                        ficha.style.top = `${100 + i * 60}px`;
+                        ficha.style.left = '100px';
+                        ficha.style.cursor = 'grab';
+                        ficha.setAttribute('draggable', true);
+            
+                        // Añadir lógica de movimiento para cada ficha
+                        ficha.addEventListener('mousedown', function(e) {
+                            let isDragging = true;
+                            let deltaX = e.clientX - ficha.getBoundingClientRect().left;
+                            let deltaY = e.clientY - ficha.getBoundingClientRect().top;
+            
+                            function mouseMoveHandler(e) {
+                                if (isDragging) {
+                                    ficha.style.left = e.clientX - deltaX + 'px';
+                                    ficha.style.top = e.clientY - deltaY + 'px';
+                                }
+                            }
+            
+                            function mouseUpHandler() {
+                                isDragging = false;
+                                window.removeEventListener('mousemove', mouseMoveHandler);
+                                window.removeEventListener('mouseup', mouseUpHandler);
+                            }
+            
+                            window.addEventListener('mousemove', mouseMoveHandler);
+                            window.addEventListener('mouseup', mouseUpHandler);
+                        });
+            
+                        tablero.appendChild(ficha);
+                    }
+                });
+            });
+            </script>
+            
+    </div>
+
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="/static/js/moverFichas.js"></script>
+</body>
+</html>
